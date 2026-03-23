@@ -364,7 +364,7 @@
 </div>
 
 <script>
-// --- نظام تغيير اللغة مع الريستارت ---
+// --- نظام تغيير اللغة ---
 let currentLang = localStorage.getItem('ur_game_lang') || 'en';
 
 function getImgSrc(baseName) {
@@ -372,14 +372,12 @@ function getImgSrc(baseName) {
 }
 
 function applyLanguageUI() {
-    // الواجهة الرئيسية
     document.getElementById('btn-pvp').src = getImgSrc('btn1.png');
     document.getElementById('btn-online').src = getImgSrc('btn2.png');
     document.getElementById('btn-bot').src = getImgSrc('btn3.png');
     document.getElementById('btn-settings').src = getImgSrc('btn4.png');
     document.getElementById('btn-lang-toggle').src = getImgSrc('lang_en.png');
     
-    // أثناء اللعب
     document.getElementById('img-p1-name').src = getImgSrc('p1_name.png');
     document.getElementById('img-p2-name').src = getImgSrc('p2_name.png');
     document.getElementById('btn-roll').src = getImgSrc('btn_roll.png');
@@ -387,7 +385,6 @@ function applyLanguageUI() {
     document.getElementById('img-instructions').src = getImgSrc('instructions.png');
     document.getElementById('img-turn').src = getImgSrc('turn_p1.png');
 
-    // الإعدادات والفوز
     document.getElementById('img-set-title').src = getImgSrc('set_title.png');
     document.getElementById('img-set-resume').src = getImgSrc('set_resume.png');
     document.getElementById('img-set-restart').src = getImgSrc('set_restart.png');
@@ -395,7 +392,6 @@ function applyLanguageUI() {
     document.getElementById('btn-vic-restart').src = getImgSrc('win_restart.png');
     document.getElementById('btn-vic-exit').src = getImgSrc('win_exit.png');
 
-    // النصوص (HTML Text)
     if(currentLang === 'ar') {
         document.getElementById('txt-online-title').innerText = "اللعب عبر الإنترنت";
         document.getElementById('txt-btn-host').innerText = "إنشاء لعبة (مضيف)";
@@ -421,13 +417,12 @@ function applyLanguageUI() {
     }
 }
 
-// تحديث الصور فوراً قبل ما تحمل المكاتب 
 window.addEventListener('DOMContentLoaded', applyLanguageUI);
 
 function toggleLanguage() {
     let newLang = currentLang === 'en' ? 'ar' : 'en';
     localStorage.setItem('ur_game_lang', newLang);
-    location.reload(); // يرست اللعبة وتطلع شاشة التحميل (النسبة المئوية)
+    location.reload(); 
 }
 
 function getChatMsg(key, val = '') {
@@ -444,20 +439,16 @@ function getChatMsg(key, val = '') {
     return msgs[key] ? msgs[key][currentLang] : '';
 }
 
-// --- كود منع التقريب والزوم بالموبايل ---
-document.addEventListener('gesturestart', function (e) {
-    e.preventDefault();
-});
+// --- منع التقريب والزوم بالموبايل ---
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 let lastTouchEnd = 0;
 document.addEventListener('touchend', function (event) {
     let now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-    }
+    if (now - lastTouchEnd <= 300) { event.preventDefault(); }
     lastTouchEnd = now;
 }, { passive: false });
 
-// --- كود تفعيل الأوفلاين (Service Worker) ---
+// --- تفعيل الأوفلاين (Service Worker) ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
@@ -469,32 +460,25 @@ let audioCtx = new AudioContext();
 const audioBuffers = {};
 
 function unlockAudioMobile() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     const buffer = audioCtx.createBuffer(1, 1, 22050);
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
     source.connect(audioCtx.destination);
     source.start(0);
-    
     window.removeEventListener('touchstart', unlockAudioMobile);
     window.removeEventListener('click', unlockAudioMobile);
 }
-
 window.addEventListener('touchstart', unlockAudioMobile, { once: true });
 window.addEventListener('click', unlockAudioMobile, { once: true });
 
 function initAudioContext() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
 }
 
 let sfxVolume = 1.0;
 let lastMusicVol = 0.4;
 let lastSfxVol = 1.0;
-
 let bgmSourceNode = null;
 let bgmGainNode = null;
 
@@ -515,7 +499,6 @@ function updateOverallProgress() {
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('launcher').style.display = 'flex';
-            // تحديث الشات الأولي للغة المختارة
             document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
         }, 500);
     }
@@ -650,13 +633,12 @@ function openSettings() {
 function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
 
 
-// --- نظام الأونلاين ---
+// --- نظام الأونلاين المحدث ---
 let peer = null;
 let conn = null;
 let isOnline = false;
 let myPlayerNum = 1; 
 
-// دالة توليد كود 5 أحرف وأرقام فقط
 function generateShortId() {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let result = '';
@@ -672,18 +654,19 @@ function openOnlineModal() {
     document.getElementById('host-ui').style.display = 'none';
     document.getElementById('join-ui').style.display = 'none';
 }
+
 function closeOnlineModal() {
     document.getElementById('online-modal').style.display = 'none';
     if(peer) { peer.destroy(); peer = null; }
     if(conn) { conn.close(); conn = null; }
 }
+
 function hostGame() {
     playClickSound();
     document.getElementById('online-menu').style.display = 'none';
     document.getElementById('host-ui').style.display = 'block';
     document.getElementById('room-id').innerText = 'Generating...';
     
-    // إنشاء الكود القصير
     const shortId = generateShortId();
     peer = new Peer(shortId);
     
@@ -701,18 +684,20 @@ function hostGame() {
     peer.on('error', (err) => {
         if(err.type === 'unavailable-id') {
             if(peer) peer.destroy();
-            hostGame(); // إعادة المحاولة إذا كان الرمز مستخدم
+            hostGame(); 
         } else {
             alert("Error: " + err.message);
             closeOnlineModal();
         }
     });
 }
+
 function showJoin() {
     playClickSound();
     document.getElementById('online-menu').style.display = 'none';
     document.getElementById('join-ui').style.display = 'block';
 }
+
 function joinGame() {
     playClickSound();
     const id = document.getElementById('join-id-input').value.trim().toUpperCase();
@@ -733,18 +718,42 @@ function joinGame() {
         });
     });
 }
+
+// دالة لمعالجة الانفصال والانسحاب بشكل صحيح
+function handleDisconnect() {
+    if (isOnline) {
+        alert(currentLang === 'ar' ? 'انسحب الخصم من اللعبة! لقد فزت.' : 'Opponent disconnected! You win.');
+        exitGameBtn(true); // نمرر true لمنع إرسال رسالة انسحاب ثانية
+    }
+}
+
 function setupConnection() {
     conn.on('data', (data) => {
         if (!game) return;
         if(data.type === 'roll') {
             game.rollDice(data.val);
         } else if(data.type === 'move') {
+            // تحديث إجباري لقيمة النرد حتى تتحرك القطعة بدون مشاكل أو تأخير
+            game.rollValue = data.rollValue; 
             game.movePiece(data.pIdx, data.player, true);
         } else if(data.type === 'restart') {
             executeRestartLocally();
+        } else if(data.type === 'disconnect') {
+            handleDisconnect();
         }
     });
+    
+    // اكتشاف انقطاع الاتصال المفاجئ
+    conn.on('close', handleDisconnect);
 }
+
+// حماية إضافية لو خرج اللاعب بإغلاق الصفحة
+window.addEventListener('beforeunload', () => {
+    if (isOnline && conn) {
+        conn.send({type: 'disconnect'});
+    }
+});
+
 
 function resetGameUI() {
     document.getElementById('btn-roll').classList.remove('disabled');
@@ -1299,8 +1308,9 @@ class Game3D {
     }
 
     async movePiece(pIdx, player, isRemote = false) {
+        // إرسال الحركة للخصم مع قيمة النرد لضمان التزامن المباشر
         if (isOnline && !isRemote && player === myPlayerNum && conn) {
-            conn.send({type: 'move', pIdx: pIdx, player: player});
+            conn.send({type: 'move', pIdx: pIdx, player: player, rollValue: this.rollValue});
         }
 
         this.isLocked = true;
@@ -1515,10 +1525,20 @@ function executeRestartLocally() {
     endCinematicIntro(); 
 }
 
-function exitGameBtn() {
+function closeConnection() {
     isOnline = false;
-    if(peer) { peer.destroy(); peer = null; }
     if(conn) { conn.close(); conn = null; }
+    if(peer) { peer.destroy(); peer = null; }
+}
+
+function exitGameBtn(isRemoteDisconnect = false) {
+    if (isOnline && conn && !isRemoteDisconnect) {
+        // نرسل رسالة الانسحاب للخصم ثم نغلق
+        conn.send({type: 'disconnect'});
+        setTimeout(() => closeConnection(), 500);
+    } else {
+        closeConnection();
+    }
     
     closeSettings();
     document.getElementById('victory-screen').style.display = 'none'; 
