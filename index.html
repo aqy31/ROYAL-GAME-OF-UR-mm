@@ -132,6 +132,15 @@
         .roll-img-btn:hover { transform: scale(1.05); }
         .roll-img-btn:active { transform: scale(0.95); }
         .roll-img-btn.disabled { filter: grayscale(1) opacity(0.5); cursor: not-allowed; pointer-events: none;}
+
+        /* التأثير النابض لزر النرد في بداية اللعبة */
+        .pulse-glow {
+            animation: pulse-glow-anim 1.5s infinite alternate;
+        }
+        @keyframes pulse-glow-anim {
+            0% { transform: scale(1); filter: drop-shadow(0px 0px 5px rgba(255,255,255,0.3)); }
+            100% { transform: scale(1.08); filter: drop-shadow(0px 0px 20px rgba(255,255,255,0.9)); }
+        }
         
         #chat-log {
             background-image: url('chat_bg.png'); background-size: 100% 100%; background-repeat: no-repeat;
@@ -162,20 +171,20 @@
         }
         .img-btn:hover { transform: scale(1.03); z-index: 2; position: relative; }
 
-        /* واجهة الأونلاين المخصصة */
+        /* واجهة الأونلاين المخصصة مع الصور بدل الأزرار */
         #online-modal {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 110; display: none; flex-direction: column; align-items: center; justify-content: center; color: #d4af37; font-family: 'Papyrus', fantasy;
         }
         .online-box {
             background: rgba(20, 10, 0, 0.9); border: 2px solid #d4af37; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            width: 85vw; max-width: 350px;
+            width: 85vw; max-width: 350px; display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
-        .online-box button {
-            background: #d4af37; color: #000; font-family: 'Papyrus', fantasy; font-size: 18px; font-weight: bold; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; transition: 0.2s;
+        .online-img-btn {
+            width: 200px; max-width: 80%; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.6));
         }
-        .online-box button:hover { transform: scale(1.05); }
+        .online-img-btn:hover { transform: scale(1.05); }
         .online-box input {
-            padding: 10px; font-size: 18px; text-align: center; font-family: 'Papyrus', fantasy; width: 80%; border: 2px solid #d4af37; background: #111; color: white; border-radius: 5px; margin-bottom: 15px; pointer-events: auto; user-select: text; text-transform: uppercase;
+            padding: 10px; font-size: 20px; text-align: center; font-family: 'Papyrus', fantasy; width: 80%; border: 2px solid #d4af37; background: #111; color: white; border-radius: 5px; margin-bottom: 10px; pointer-events: auto; user-select: text; text-transform: uppercase; font-weight: bold; letter-spacing: 2px;
         }
 
         #footer {
@@ -268,7 +277,7 @@
     </div>
     
     <div id="bottom-bar">
-        <img id="btn-roll" src="btn_roll.png" class="roll-img-btn" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="">
+        <img id="btn-roll" src="btn_roll.png" class="roll-img-btn pulse-glow" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="">
         
         <div id="chat-log">
             <div class="log-entry">Game ready, Good luck!</div>
@@ -282,23 +291,21 @@
 
 <div id="online-modal">
     <div class="online-box" id="online-menu">
-        <h2 id="txt-online-title">Online Multiplayer</h2>
-        <button onclick="hostGame()" id="txt-btn-host" style="width: 100%;">Create Game (Host)</button>
-        <button onclick="showJoin()" id="txt-btn-join" style="width: 100%;">Join Game (Guest)</button>
-        <button onclick="closeOnlineModal()" id="txt-btn-cancel1" style="width: 100%; background: #444; color: white;">Cancel</button>
+        <img id="btn-host" src="btn_host.png" class="online-img-btn" onclick="hostGame()" alt="Create Game (Host)" onerror="this.src=''; this.alt='Create Game (Host)'; this.style.color='gold'; this.style.border='1px solid gold'; this.style.padding='10px';">
+        <img id="btn-join" src="btn_join.png" class="online-img-btn" onclick="showJoin()" alt="Join Game (Guest)" onerror="this.src=''; this.alt='Join Game (Guest)'; this.style.color='gold'; this.style.border='1px solid gold'; this.style.padding='10px';">
+        <img id="btn-cancel1" src="btn_cancel.png" class="online-img-btn" onclick="closeOnlineModal()" alt="Cancel" style="margin-top: 15px; width: 150px;" onerror="this.src=''; this.alt='Cancel'; this.style.color='gray'; this.style.border='1px solid gray'; this.style.padding='5px';">
     </div>
     <div class="online-box" id="host-ui" style="display:none;">
-        <h3 id="txt-room-id">Your Room ID:</h3>
-        <h1 id="room-id" style="background:#222; padding:10px; border-radius:5px; user-select:all; letter-spacing: 2px;">Loading...</h1>
-        <p id="txt-waiting">Waiting for opponent...</p>
-        <button onclick="closeOnlineModal()" id="txt-btn-cancel2" style="background: #444; color: white;">Cancel</button>
+        <h3 id="txt-room-id" style="margin:5px 0;">Your Room ID:</h3>
+        <h1 id="room-id" style="background:#222; padding:15px; border-radius:5px; user-select:all; letter-spacing: 5px; font-size: 2.5rem; margin: 10px 0; border: 1px solid #d4af37;">...</h1>
+        <p id="txt-waiting" style="margin-bottom:15px;">Waiting for opponent...</p>
+        <img id="btn-cancel2" src="btn_cancel.png" class="online-img-btn" style="width: 150px;" onclick="closeOnlineModal()" alt="Cancel" onerror="this.src=''; this.alt='Cancel'; this.style.color='gray'; this.style.border='1px solid gray'; this.style.padding='5px';">
     </div>
     <div class="online-box" id="join-ui" style="display:none;">
-        <h3 id="txt-enter-id">Enter Room ID:</h3>
+        <h3 id="txt-enter-id" style="margin-bottom:10px;">Enter Room ID:</h3>
         <input type="text" id="join-id-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="5">
-        <br>
-        <button onclick="joinGame()" id="txt-btn-connect">Connect</button>
-        <button onclick="closeOnlineModal()" id="txt-btn-cancel3" style="background: #444; color: white;">Cancel</button>
+        <img id="btn-connect" src="btn_connect.png" class="online-img-btn" onclick="joinGame()" alt="Connect" onerror="this.src=''; this.alt='Connect'; this.style.color='gold'; this.style.border='1px solid gold'; this.style.padding='10px';">
+        <img id="btn-cancel3" src="btn_cancel.png" class="online-img-btn" style="margin-top: 15px; width: 150px;" onclick="closeOnlineModal()" alt="Cancel" onerror="this.src=''; this.alt='Cancel'; this.style.color='gray'; this.style.border='1px solid gray'; this.style.padding='5px';">
     </div>
 </div>
 
@@ -323,7 +330,7 @@
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 5px;">
             <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); closeSettings();" alt="">
             <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); restartGameBtn();" alt="">
-            <img id="btn-lang-toggle" src="lang_en.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); toggleLanguage();" alt="Change Language">
+            <img id="btn-lang-toggle" src="lang_en.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); toggleLanguage();" alt="Change Language" onerror="this.src=''; this.alt='Change Language'; this.style.color='gold'; this.style.border='1px solid gold'; this.style.padding='10px';">
             <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); exitGameBtn();" alt="">
         </div>
     </div>
@@ -392,28 +399,22 @@ function applyLanguageUI() {
     document.getElementById('btn-vic-restart').src = getImgSrc('win_restart.png');
     document.getElementById('btn-vic-exit').src = getImgSrc('win_exit.png');
 
+    // صور الأونلاين
+    document.getElementById('btn-host').src = getImgSrc('btn_host.png');
+    document.getElementById('btn-join').src = getImgSrc('btn_join.png');
+    document.getElementById('btn-connect').src = getImgSrc('btn_connect.png');
+    document.getElementById('btn-cancel1').src = getImgSrc('btn_cancel.png');
+    document.getElementById('btn-cancel2').src = getImgSrc('btn_cancel.png');
+    document.getElementById('btn-cancel3').src = getImgSrc('btn_cancel.png');
+
     if(currentLang === 'ar') {
-        document.getElementById('txt-online-title').innerText = "اللعب عبر الإنترنت";
-        document.getElementById('txt-btn-host').innerText = "إنشاء لعبة (مضيف)";
-        document.getElementById('txt-btn-join').innerText = "انضمام للعبة (ضيف)";
-        document.getElementById('txt-btn-cancel1').innerText = "إلغاء";
         document.getElementById('txt-room-id').innerText = "رمز الغرفة الخاص بك:";
         document.getElementById('txt-waiting').innerText = "بانتظار الخصم...";
-        document.getElementById('txt-btn-cancel2').innerText = "إلغاء";
         document.getElementById('txt-enter-id').innerText = "أدخل رمز الغرفة:";
-        document.getElementById('txt-btn-connect').innerText = "اتصال";
-        document.getElementById('txt-btn-cancel3').innerText = "إلغاء";
     } else {
-        document.getElementById('txt-online-title').innerText = "Online Multiplayer";
-        document.getElementById('txt-btn-host').innerText = "Create Game (Host)";
-        document.getElementById('txt-btn-join').innerText = "Join Game (Guest)";
-        document.getElementById('txt-btn-cancel1').innerText = "Cancel";
         document.getElementById('txt-room-id').innerText = "Your Room ID:";
         document.getElementById('txt-waiting').innerText = "Waiting for opponent...";
-        document.getElementById('txt-btn-cancel2').innerText = "Cancel";
         document.getElementById('txt-enter-id').innerText = "Enter Room ID:";
-        document.getElementById('txt-btn-connect').innerText = "Connect";
-        document.getElementById('txt-btn-cancel3').innerText = "Cancel";
     }
 }
 
@@ -448,7 +449,6 @@ document.addEventListener('touchend', function (event) {
     lastTouchEnd = now;
 }, { passive: false });
 
-// --- تفعيل الأوفلاين (Service Worker) ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
@@ -633,7 +633,7 @@ function openSettings() {
 function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
 
 
-// --- نظام الأونلاين المحدث ---
+// --- نظام الأونلاين ---
 let peer = null;
 let conn = null;
 let isOnline = false;
@@ -650,7 +650,7 @@ function generateShortId() {
 
 function openOnlineModal() {
     document.getElementById('online-modal').style.display = 'flex';
-    document.getElementById('online-menu').style.display = 'block';
+    document.getElementById('online-menu').style.display = 'flex';
     document.getElementById('host-ui').style.display = 'none';
     document.getElementById('join-ui').style.display = 'none';
 }
@@ -664,8 +664,8 @@ function closeOnlineModal() {
 function hostGame() {
     playClickSound();
     document.getElementById('online-menu').style.display = 'none';
-    document.getElementById('host-ui').style.display = 'block';
-    document.getElementById('room-id').innerText = 'Generating...';
+    document.getElementById('host-ui').style.display = 'flex';
+    document.getElementById('room-id').innerText = '...';
     
     const shortId = generateShortId();
     peer = new Peer(shortId);
@@ -695,7 +695,7 @@ function hostGame() {
 function showJoin() {
     playClickSound();
     document.getElementById('online-menu').style.display = 'none';
-    document.getElementById('join-ui').style.display = 'block';
+    document.getElementById('join-ui').style.display = 'flex';
 }
 
 function joinGame() {
@@ -703,7 +703,8 @@ function joinGame() {
     const id = document.getElementById('join-id-input').value.trim().toUpperCase();
     if(!id) return;
     
-    document.getElementById('txt-btn-connect').innerText = "...";
+    document.getElementById('btn-connect').style.opacity = '0.5';
+    document.getElementById('btn-connect').style.pointerEvents = 'none';
     
     peer = new Peer();
     peer.on('open', () => {
@@ -713,17 +714,17 @@ function joinGame() {
             myPlayerNum = 2;
             isOnline = true;
             document.getElementById('online-modal').style.display = 'none';
-            document.getElementById('txt-btn-connect').innerText = currentLang === 'ar' ? "اتصال" : "Connect";
+            document.getElementById('btn-connect').style.opacity = '1';
+            document.getElementById('btn-connect').style.pointerEvents = 'auto';
             startCinematicIntro('ONLINE');
         });
     });
 }
 
-// دالة لمعالجة الانفصال والانسحاب بشكل صحيح
 function handleDisconnect() {
     if (isOnline) {
         alert(currentLang === 'ar' ? 'انسحب الخصم من اللعبة! لقد فزت.' : 'Opponent disconnected! You win.');
-        exitGameBtn(true); // نمرر true لمنع إرسال رسالة انسحاب ثانية
+        exitGameBtn(true); 
     }
 }
 
@@ -733,7 +734,6 @@ function setupConnection() {
         if(data.type === 'roll') {
             game.rollDice(data.val);
         } else if(data.type === 'move') {
-            // تحديث إجباري لقيمة النرد حتى تتحرك القطعة بدون مشاكل أو تأخير
             game.rollValue = data.rollValue; 
             game.movePiece(data.pIdx, data.player, true);
         } else if(data.type === 'restart') {
@@ -743,11 +743,9 @@ function setupConnection() {
         }
     });
     
-    // اكتشاف انقطاع الاتصال المفاجئ
     conn.on('close', handleDisconnect);
 }
 
-// حماية إضافية لو خرج اللاعب بإغلاق الصفحة
 window.addEventListener('beforeunload', () => {
     if (isOnline && conn) {
         conn.send({type: 'disconnect'});
@@ -756,7 +754,11 @@ window.addEventListener('beforeunload', () => {
 
 
 function resetGameUI() {
-    document.getElementById('btn-roll').classList.remove('disabled');
+    const btnRoll = document.getElementById('btn-roll');
+    btnRoll.classList.remove('disabled');
+    // إعادة النبض لزر النرد عند بدء لعبة جديدة
+    btnRoll.classList.add('pulse-glow');
+    
     document.getElementById('img-turn').src = getImgSrc('turn_p1.png');
     document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
     document.getElementById('s1').innerText = "0";
@@ -791,6 +793,8 @@ class Game3D {
         this.controls.enableDamping = true; 
         this.controls.dampingFactor = 0.05;
         this.controls.target.set(0, 0, 0); 
+        // منع الكاميرا من النزول تحت الطاولة
+        this.controls.maxPolarAngle = Math.PI / 2.2; 
         
         this.pieces = [];
         this.diceModels = [];
@@ -833,7 +837,6 @@ class Game3D {
 
         this.isMobile = window.innerWidth < 768;
         this.defaultCamPos = this.isMobile ? {x: -28, y: 24, z: 12} : {x: -25, y: 16, z: 15};
-        this.controls.maxPolarAngle = this.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
         this.controls.minDistance = 10;
         this.controls.maxDistance = 60; 
 
@@ -1070,6 +1073,14 @@ class Game3D {
         geo.addGroup(6, 3, 2);
         geo.addGroup(9, 3, 3);
 
+        // توزيع النرد الأربعة بشكل مربع متباعد
+        const dicePositions = [
+            { x: -15.5, z: -1.2 },
+            { x: -13.5, z: -1.2 },
+            { x: -15.5, z:  1.2 },
+            { x: -13.5, z:  1.2 }
+        ];
+
         for(let i=0; i<4; i++) {
             const diceMats = [
                 new THREE.MeshStandardMaterial({ map: textures.dice1, color: 0xddddcc, roughness: 0.6, metalness: 0.2, emissive: 0xffffff, emissiveIntensity: 0 }),
@@ -1079,7 +1090,8 @@ class Game3D {
             ];
             
             const die = new THREE.Mesh(geo, diceMats);
-            die.position.set(-14.5 + (Math.random()*1.5 - 0.75), 1.15, (Math.random()*1.5 - 0.75));
+            die.position.set(dicePositions[i].x, 1.15, dicePositions[i].z);
+            die.userData = { startPos: dicePositions[i] }; 
             die.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
             die.castShadow = true;
             this.scene.add(die);
@@ -1114,7 +1126,10 @@ class Game3D {
         if(this.targetHighlight) this.targetHighlight.visible = false;
         
         const btn = document.getElementById('btn-roll');
-        if(btn) btn.classList.add('disabled');
+        if(btn) {
+            btn.classList.add('disabled');
+            btn.classList.remove('pulse-glow'); // إيقاف النبض بعد أول ضغطة
+        }
         playSFX('dice');
 
         let val = 0;
@@ -1138,7 +1153,8 @@ class Game3D {
             }
             
             anims.push(gsap.to(die.rotation, { x: Math.random()*10, y: Math.random()*10, duration: 0.6, ease: "power2.out" }));
-            anims.push(gsap.to(die.position, { y: 3.5, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out", x: -14.5 + (Math.random()*2 - 1), z: (Math.random()*2 - 1) }));
+            // حركة النرد مع العودة للمكان الأصلي المرتب
+            anims.push(gsap.to(die.position, { y: 3.5, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out", x: die.userData.startPos.x, z: die.userData.startPos.z }));
             
             die.material.forEach(mat => {
                 anims.push(gsap.to(mat, { emissiveIntensity: isLit ? 0.3 : 0, duration: 0.6 }));
@@ -1230,6 +1246,8 @@ class Game3D {
             this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             this.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
             this.raycastPiece();
+            
+            if (event.cancelable) event.preventDefault();
         }
     }
 
@@ -1308,7 +1326,6 @@ class Game3D {
     }
 
     async movePiece(pIdx, player, isRemote = false) {
-        // إرسال الحركة للخصم مع قيمة النرد لضمان التزامن المباشر
         if (isOnline && !isRemote && player === myPlayerNum && conn) {
             conn.send({type: 'move', pIdx: pIdx, player: player, rollValue: this.rollValue});
         }
@@ -1403,6 +1420,8 @@ class Game3D {
                 btn.classList.add('disabled');
             } else {
                 btn.classList.remove('disabled');
+                // تفعيل النبض للزر فقط عندما يكون دوري لرمي النرد
+                btn.classList.add('pulse-glow');
             }
         }
         
@@ -1483,7 +1502,9 @@ function endCinematicIntro() {
     showZoomHint(); 
     
     if (isOnline && myPlayerNum !== 1) {
-        document.getElementById('btn-roll').classList.add('disabled');
+        const btn = document.getElementById('btn-roll');
+        btn.classList.add('disabled');
+        btn.classList.remove('pulse-glow');
     }
 
     let tl = gsap.timeline();
@@ -1533,7 +1554,6 @@ function closeConnection() {
 
 function exitGameBtn(isRemoteDisconnect = false) {
     if (isOnline && conn && !isRemoteDisconnect) {
-        // نرسل رسالة الانسحاب للخصم ثم نغلق
         conn.send({type: 'disconnect'});
         setTimeout(() => closeConnection(), 500);
     } else {
@@ -1565,7 +1585,7 @@ window.addEventListener('resize', () => {
     if(!game) return;
     game.isMobile = window.innerWidth < 768;
     game.defaultCamPos = game.isMobile ? {x: -28, y: 24, z: 12} : {x: -25, y: 16, z: 15};
-    game.controls.maxPolarAngle = game.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
+    game.controls.maxPolarAngle = game.isMobile ? Math.PI / 2.8 : Math.PI / 2.2;
     
     if(!game.isCinematic) {
         game.camera.position.set(game.defaultCamPos.x, game.defaultCamPos.y, game.defaultCamPos.z);
