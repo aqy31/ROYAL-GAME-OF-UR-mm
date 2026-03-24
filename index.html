@@ -14,17 +14,19 @@
     <link rel="preload" href="board.png" as="image">
     
     <title>Royal Game of Ur - Pro Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <style>
         @font-face {
             font-family: 'GameFontAr';
             src: url('font_ar.ttf') format('truetype');
-            font-display: swap;
         }
         @font-face {
             font-family: 'GameFontEn';
             src: url('font_en.ttf') format('truetype');
-            font-display: swap;
         }
 
         html, body {
@@ -207,7 +209,7 @@
         .img-btn:hover { transform: scale(1.03); z-index: 2; position: relative; }
 
         #online-modal {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 110; display: none; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 110; display: none; flex-direction: column; align-items: center; justify-content: center; color: #d4af37;
         }
         .online-box {
             background-image: url('online_bg.png'); 
@@ -471,11 +473,6 @@
     <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;">
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
 <script>
 let p1CharIndex = 1; 
 let p2CharIndex = 3; 
@@ -615,12 +612,12 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// هنا الكود الأصلي والمضبوط لضمان عدم توقف التحميل على أي متصفح
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null; 
+let audioCtx = new AudioContext(); 
 const audioBuffers = {};
 
 function unlockAudioMobile() {
-    if (!audioCtx) audioCtx = new AudioContext();
     if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     const buffer = audioCtx.createBuffer(1, 1, 22050);
     const source = audioCtx.createBufferSource();
@@ -634,7 +631,6 @@ window.addEventListener('touchstart', unlockAudioMobile, { once: true });
 window.addEventListener('click', unlockAudioMobile, { once: true });
 
 function initAudioContext() {
-    if (!audioCtx) audioCtx = new AudioContext();
     if (audioCtx.state === 'suspended') { audioCtx.resume(); }
 }
 
@@ -671,10 +667,6 @@ loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
     texturesLoadedCount = itemsLoaded;
     updateOverallProgress();
 };
-loadingManager.onError = function(url) {
-    texturesLoadedCount++; 
-    updateOverallProgress();
-};
 
 const textureLoader = new THREE.TextureLoader(loadingManager);
 const textures = {
@@ -699,15 +691,10 @@ async function loadSFX(id, url) {
     try {
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
-        audioLoadedCount++; 
+        const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
+        audioBuffers[id] = decodedData;
+        audioLoadedCount++;
         updateOverallProgress();
-        
-        if (!audioCtx) audioCtx = new AudioContext();
-        audioCtx.decodeAudioData(arrayBuffer, function(decodedData) {
-            audioBuffers[id] = decodedData;
-        }, function(err) {
-            console.error("Audio Load Error:", err);
-        });
     } catch (err) {
         audioLoadedCount++; 
         updateOverallProgress();
@@ -720,7 +707,6 @@ loadSFX('click', 'click.mp3');
 loadSFX('bgm', 'music.mp3'); 
 
 function playBGM() {
-    if (!audioCtx) audioCtx = new AudioContext();
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (bgmSourceNode) return; 
     if (audioBuffers['bgm']) {
@@ -738,7 +724,6 @@ function playBGM() {
 }
 
 function playSFX(id) {
-    if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (sfxVolume <= 0) return;
     if (audioBuffers[id]) {
@@ -797,14 +782,14 @@ function openSettings() {
     document.getElementById('settings-menu').style.display = 'flex'; 
     if (game == null) {
         document.getElementById('img-set-restart').style.display = 'none';
-        document.getElementById('img-set-exit').style.display = 'none';
-        document.getElementById('btn-lang-toggle').style.display = 'block';
-        document.getElementById('img-set-resume').style.display = 'block';
+        document.getElementById('img-set-resume').style.display = 'none';  
+        document.getElementById('img-set-exit').style.display = 'none';   
+        document.getElementById('btn-lang-toggle').style.display = 'block'; 
     } else {
-        document.getElementById('img-set-restart').style.display = 'block';
-        document.getElementById('img-set-exit').style.display = 'block';
-        document.getElementById('btn-lang-toggle').style.display = 'none'; 
-        document.getElementById('img-set-resume').style.display = 'block'; 
+        document.getElementById('img-set-restart').style.display = 'block'; 
+        document.getElementById('img-set-resume').style.display = 'block';  
+        document.getElementById('img-set-exit').style.display = 'block';    
+        document.getElementById('btn-lang-toggle').style.display = 'none';  
     }
 }
 function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
