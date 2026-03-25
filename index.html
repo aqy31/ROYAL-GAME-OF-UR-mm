@@ -634,11 +634,12 @@ document.addEventListener('touchmove', function(e) {
     if (e.scale !== 1) { e.preventDefault(); }
 }, { passive: false });
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+// تسجيل Service Worker يعمل عند حدث التحميل 
+window.onload = () => {
+    if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
-    });
-}
+    }
+};
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null; 
@@ -671,27 +672,12 @@ let bgmGainNode = null;
 
 let texturesLoadedCount = 0;
 let audioLoadedCount = 0;
-let uiImagesLoadedCount = 0;
 const totalTextures = 15; 
 const totalAudio = 4;
 
-const uiImagesList = [
-    'logo.png', 'bg.png', 'set_bg.png', 'chat_bg.png', 'online_bg.png', 'char_bg.png', 'bg_input.png',
-    'btn1.png', 'btn2.png', 'btn3.png', 'btn4.png', 'lang_en.png', 'lang_ar.png',
-    'btn_roll.png', 'zoom_hint.png', 'instructions.png',
-    'set_title.png', 'set_music.png', 'set_sfx.png', 'set_resume.png', 'set_resume_ar.png', 'set_restart.png', 'set_exit.png', 'set_icon.png', 'set_icon_ar.png',
-    'win_restart.png', 'win_exit.png', 'win_p1.png', 'win_p2.png', 'btn_start.png', 'char_title.png',
-    'btn_host.png', 'btn_join.png', 'btn_connect.png', 'btn_cancel.png',
-    'char_icon_1.png', 'char_icon_2.png', 'char_icon_3.png', 'char_icon_4.png',
-    'char_ingame_1.png', 'char_ingame_2.png', 'char_ingame_3.png', 'char_ingame_4.png',
-    'char_ingame_1_ar.png', 'char_ingame_2_ar.png', 'char_ingame_3_ar.png', 'char_ingame_4_ar.png',
-    'slider_track.png', 'slider_thumb.png', 'tg.png', 'insta.png'
-];
-const totalUiImages = uiImagesList.length;
-
 function updateOverallProgress() {
-    let current = texturesLoadedCount + audioLoadedCount + uiImagesLoadedCount;
-    let total = totalTextures + totalAudio + totalUiImages;
+    let current = texturesLoadedCount + audioLoadedCount;
+    let total = totalTextures + totalAudio;
     let percent = Math.floor((current / total) * 100);
     
     document.getElementById('progress-fill').style.width = percent + '%';
@@ -704,17 +690,6 @@ function updateOverallProgress() {
             document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
         }, 500);
     }
-}
-
-function preloadUIImages() {
-    uiImagesList.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        img.onload = img.onerror = () => {
-            uiImagesLoadedCount++;
-            updateOverallProgress();
-        };
-    });
 }
 
 const loadingManager = new THREE.LoadingManager();
@@ -765,14 +740,12 @@ async function loadSFX(id, url) {
     }
 }
 
-window.addEventListener('load', () => {
-    applyLanguageUI();
-    preloadUIImages();
-    loadSFX('dice', 'dice.mp3');
-    loadSFX('move', 'move.mp3');
-    loadSFX('click', 'click.mp3'); 
-    loadSFX('bgm', 'music.mp3'); 
-});
+// تحميل الداتا مباشرة في النطاق العام لمنع اختناق المتصفح
+applyLanguageUI();
+loadSFX('dice', 'dice.mp3');
+loadSFX('move', 'move.mp3');
+loadSFX('click', 'click.mp3'); 
+loadSFX('bgm', 'music.mp3'); 
 
 function playBGM() {
     if (!audioCtx) audioCtx = new AudioContext();
@@ -872,6 +845,10 @@ let myPlayerNum = 1;
 
 let hostTimeout = null;
 
+function generateShortId() { 
+    return Math.random().toString(36).substring(2, 7).toUpperCase(); 
+}
+
 function openOnlineModal() {
     document.getElementById('online-modal').style.display = 'flex';
     document.getElementById('online-menu').style.display = 'flex';
@@ -895,7 +872,7 @@ function attemptHost() {
     const shortId = generateShortId();
     
     try {
-        peer = new Peer(shortId);
+        peer = new Peer(shortId, { config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
     } catch(e) {
         console.error("PeerJS Error:", e);
     }
@@ -957,7 +934,7 @@ function joinGame() {
     document.getElementById('btn-connect').style.opacity = '0.5';
     document.getElementById('btn-connect').style.pointerEvents = 'none';
     
-    peer = new Peer();
+    peer = new Peer({ config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
     peer.on('open', () => {
         conn = peer.connect(id);
         conn.on('open', () => {
@@ -992,7 +969,15 @@ function handleDisconnect() {
 }
 
 function setupConnection() {
+    // Keep-Alive Ping كل 10 ثوانٍ لتجنب انقطاع المتصفح الخامل
+    setInterval(() => {
+        if (conn && conn.open) {
+            conn.send({type: 'ping'});
+        }
+    }, 10000);
+
     conn.on('data', (data) => {
+        if (data.type === 'ping') return; // تجاهل النبضة بأمان
         if (!game) return;
         if(data.type === 'roll') {
             game.rollDice(data.val);
