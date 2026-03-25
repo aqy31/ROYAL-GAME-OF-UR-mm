@@ -13,11 +13,12 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     
     <link rel="preload" href="bg.png" as="image">
-    <link rel="preload" href="logo.png" as="image"> <link rel="preload" href="table.png" as="image">
-    <link rel="preload" href="board.png" as="image">
+    <link rel="preload" href="logo.png" as="image">
+    
     <title>Royal Game of Ur - Pro Edition</title>
     
     <style>
+        /* تأمين الخطوط: استخدام swap يمنع الشاشة السوداء أثناء انتظار تحميل الخط */
         @font-face {
             font-family: 'GameFontAr';
             src: url('font_ar.ttf') format('truetype');
@@ -39,7 +40,7 @@
 
         html, body {
             overscroll-behavior: none;
-            touch-action: pan-x pan-y; /* السماح بالسحب البسيط للواجهات ومنع الزوم */
+            touch-action: pan-x pan-y;
         }
         
         body { 
