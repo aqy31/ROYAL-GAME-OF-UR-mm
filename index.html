@@ -460,7 +460,7 @@
 <div id="launcher">
     <div class="menu-buttons">
         <img id="btn-pvp" src="btn1.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('PVP');" alt="">
-        <img id="btn-online" src="btn2.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('ONLINE');" alt="">
+        <img id="btn-online" src="btn2.png" class="img-btn" onclick="initAudioContext(); playClickSound(); pendingMode = 'ONLINE'; openOnlineModal();" alt="">
         <img id="btn-bot" src="btn3.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('BOT');" alt="">
         <img id="btn-settings" src="btn4.png" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
     </div>
@@ -540,13 +540,14 @@ function confirmCharacterSelection() {
     playClickSound();
     document.getElementById('character-selection').style.display = 'none';
     
-    if (pendingMode === 'ONLINE') {
-        openOnlineModal();
-    } else {
-        document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
-        document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-        startCinematicIntro(pendingMode);
+    document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
+    document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
+
+    if (pendingMode === 'ONLINE' && conn && conn.open) {
+        conn.send({ type: 'char_select', charIndex: myPlayerNum === 1 ? p1CharIndex : p2CharIndex });
     }
+    
+    startCinematicIntro(pendingMode);
 }
 
 let currentLang = localStorage.getItem('ur_game_lang') || 'ar';
@@ -901,10 +902,7 @@ function attemptHost() {
         isOnline = true;
         document.getElementById('online-modal').style.display = 'none';
         
-        document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
-        document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-        
-        startCinematicIntro('ONLINE');
+        openCharacterSelection('ONLINE');
     });
     
     peer.on('error', (err) => {
@@ -948,10 +946,7 @@ function joinGame() {
             document.getElementById('btn-connect').style.opacity = '1';
             document.getElementById('btn-connect').style.pointerEvents = 'auto';
             
-            document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
-            document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-            
-            startCinematicIntro('ONLINE');
+            openCharacterSelection('ONLINE');
         });
         conn.on('error', (err) => {
             alert("Connection Error: " + err.message);
@@ -980,6 +975,20 @@ function setupConnection() {
 
     conn.on('data', (data) => {
         if (data.type === 'ping') return; 
+        
+        if (data.type === 'char_select') {
+            if (myPlayerNum === 1) {
+                p2CharIndex = data.charIndex;
+                const p2Img = document.getElementById('img-p2-name');
+                if(p2Img) p2Img.src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
+            } else {
+                p1CharIndex = data.charIndex;
+                const p1Img = document.getElementById('img-p1-name');
+                if(p1Img) p1Img.src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
+            }
+            return;
+        }
+
         if (!game) return;
         if(data.type === 'roll') {
             game.rollDice(data.val);
