@@ -9,16 +9,13 @@
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    
     <link rel="preload" href="bg.png" as="image">
-    <link rel="preload" href="logo.png" as="image">
+    <link rel="preload" href="table.png" as="image">
+    <link rel="preload" href="board.png" as="image">
     
     <title>Royal Game of Ur - Pro Edition</title>
     
     <style>
-        /* تأمين الخطوط: استخدام swap يمنع الشاشة السوداء أثناء انتظار تحميل الخط */
         @font-face {
             font-family: 'GameFontAr';
             src: url('font_ar.ttf') format('truetype');
@@ -460,7 +457,7 @@
 <div id="launcher">
     <div class="menu-buttons">
         <img id="btn-pvp" src="btn1.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('PVP');" alt="">
-        <img id="btn-online" src="btn2.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openOnlineModal();" alt="">
+        <img id="btn-online" src="btn2.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('ONLINE');" alt="">
         <img id="btn-bot" src="btn3.png" class="img-btn" onclick="initAudioContext(); playClickSound(); openCharacterSelection('BOT');" alt="">
         <img id="btn-settings" src="btn4.png" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
     </div>
@@ -540,10 +537,13 @@ function confirmCharacterSelection() {
     playClickSound();
     document.getElementById('character-selection').style.display = 'none';
     
-    document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
-    document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-    
-    startCinematicIntro(pendingMode);
+    if (pendingMode === 'ONLINE') {
+        openOnlineModal();
+    } else {
+        document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
+        document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
+        startCinematicIntro(pendingMode);
+    }
 }
 
 let currentLang = localStorage.getItem('ur_game_lang') || 'ar';
@@ -637,7 +637,6 @@ document.addEventListener('touchmove', function(e) {
     if (e.scale !== 1) { e.preventDefault(); }
 }, { passive: false });
 
-// تسجيل Service Worker يعمل عند حدث التحميل 
 window.onload = () => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
@@ -675,12 +674,27 @@ let bgmGainNode = null;
 
 let texturesLoadedCount = 0;
 let audioLoadedCount = 0;
+let uiImagesLoadedCount = 0;
 const totalTextures = 15; 
 const totalAudio = 4;
 
+const uiImagesList = [
+    'logo.png', 'bg.png', 'set_bg.png', 'chat_bg.png', 'online_bg.png', 'char_bg.png', 'bg_input.png',
+    'btn1.png', 'btn2.png', 'btn3.png', 'btn4.png', 'lang_en.png', 'lang_ar.png',
+    'btn_roll.png', 'zoom_hint.png', 'instructions.png',
+    'set_title.png', 'set_music.png', 'set_sfx.png', 'set_resume.png', 'set_resume_ar.png', 'set_restart.png', 'set_exit.png', 'set_icon.png', 'set_icon_ar.png',
+    'win_restart.png', 'win_exit.png', 'win_p1.png', 'win_p2.png', 'btn_start.png', 'char_title.png',
+    'btn_host.png', 'btn_join.png', 'btn_connect.png', 'btn_cancel.png',
+    'char_icon_1.png', 'char_icon_2.png', 'char_icon_3.png', 'char_icon_4.png',
+    'char_ingame_1.png', 'char_ingame_2.png', 'char_ingame_3.png', 'char_ingame_4.png',
+    'char_ingame_1_ar.png', 'char_ingame_2_ar.png', 'char_ingame_3_ar.png', 'char_ingame_4_ar.png',
+    'slider_track.png', 'slider_thumb.png', 'tg.png', 'insta.png'
+];
+const totalUiImages = uiImagesList.length;
+
 function updateOverallProgress() {
-    let current = texturesLoadedCount + audioLoadedCount;
-    let total = totalTextures + totalAudio;
+    let current = texturesLoadedCount + audioLoadedCount + uiImagesLoadedCount;
+    let total = totalTextures + totalAudio + totalUiImages;
     let percent = Math.floor((current / total) * 100);
     
     document.getElementById('progress-fill').style.width = percent + '%';
@@ -693,6 +707,17 @@ function updateOverallProgress() {
             document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
         }, 500);
     }
+}
+
+function preloadUIImages() {
+    uiImagesList.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        img.onload = img.onerror = () => {
+            uiImagesLoadedCount++;
+            updateOverallProgress();
+        };
+    });
 }
 
 const loadingManager = new THREE.LoadingManager();
@@ -743,7 +768,6 @@ async function loadSFX(id, url) {
     }
 }
 
-// تحميل الداتا مباشرة في النطاق العام لمنع اختناق المتصفح
 applyLanguageUI();
 loadSFX('dice', 'dice.mp3');
 loadSFX('move', 'move.mp3');
@@ -866,7 +890,6 @@ function closeOnlineModal() {
     if(conn) { conn.close(); conn = null; }
 }
 
-// --- حل مشكلة تعليق سيرفر PeerJS عند الاستضافة (Host) ---
 function attemptHost() {
     if(peer) { 
         peer.destroy(); 
@@ -880,7 +903,6 @@ function attemptHost() {
         console.error("PeerJS Error:", e);
     }
 
-    // إذا لم يتم الربط خلال 5 ثواني، أعد محاولة إنشاء كود جديد حتى لا تعلق الشاشة
     clearTimeout(hostTimeout);
     hostTimeout = setTimeout(() => {
         if(peer && !peer.open) {
@@ -890,7 +912,7 @@ function attemptHost() {
     }, 5000);
     
     peer.on('open', (id) => {
-        clearTimeout(hostTimeout); // تم الربط بنجاح، أوقف الإعادة
+        clearTimeout(hostTimeout);
         document.getElementById('room-id').innerText = id;
     });
     
@@ -909,7 +931,7 @@ function attemptHost() {
     
     peer.on('error', (err) => {
         if(err.type === 'unavailable-id' || err.type === 'server-error' || err.type === 'network') {
-            attemptHost(); // أعد المحاولة بصمت إذا كان العطل من السيرفر
+            attemptHost(); 
         }
     });
 }
@@ -972,7 +994,6 @@ function handleDisconnect() {
 }
 
 function setupConnection() {
-    // Keep-Alive Ping كل 10 ثوانٍ لتجنب انقطاع المتصفح الخامل
     setInterval(() => {
         if (conn && conn.open) {
             conn.send({type: 'ping'});
@@ -980,7 +1001,7 @@ function setupConnection() {
     }, 10000);
 
     conn.on('data', (data) => {
-        if (data.type === 'ping') return; // تجاهل النبضة بأمان
+        if (data.type === 'ping') return; 
         if (!game) return;
         if(data.type === 'roll') {
             game.rollDice(data.val);
