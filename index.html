@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" style="background-color: #050505;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,23 +10,10 @@
     <link rel="manifest" href="manifest.json">
 
     <link rel="preload" href="bg.png" as="image">
-    <link rel="preload" href="table.png" as="image">
-    <link rel="preload" href="board.png" as="image">
     
     <title>Royal Game of Ur - Pro Edition</title>
     
     <style>
-        @font-face {
-            font-family: 'GameFontAr';
-            src: url('font_ar.ttf') format('truetype');
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'GameFontEn';
-            src: url('font_en.ttf') format('truetype');
-            font-display: swap;
-        }
-
         /* قفل الشاشة والمنع الإجباري للزوم */
         * {
             -webkit-tap-highlight-color: transparent;
@@ -329,7 +316,7 @@
         }
     </style>
 </head>
-<body>
+<body style="background-color: #050505;">
 
 <div id="loading-screen">
     <img src="logo.png" style="width: 150px; margin-bottom: 10px;" alt="">
@@ -480,10 +467,10 @@
     <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onerror="this.style.display='none'">
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" defer></script>
 
 <script>
 // --- كود منع التقريب المزعج عند النقر المزدوج ---
@@ -565,7 +552,7 @@ function getImgSrc(baseName) {
 }
 
 function applyLanguageUI() {
-    document.body.style.fontFamily = currentLang === 'ar' ? "'GameFontAr', sans-serif" : "'GameFontEn', sans-serif";
+    document.body.style.fontFamily = "sans-serif";
 
     document.getElementById('btn-pvp').src = getImgSrc('btn1.png');
     document.getElementById('btn-online').src = getImgSrc('btn2.png');
@@ -634,7 +621,6 @@ document.addEventListener('touchmove', function(e) {
     if (e.scale !== 1) { e.preventDefault(); }
 }, { passive: false });
 
-// تسجيل Service Worker يعمل عند حدث التحميل 
 window.onload = () => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
@@ -692,35 +678,6 @@ function updateOverallProgress() {
     }
 }
 
-const loadingManager = new THREE.LoadingManager();
-loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
-    texturesLoadedCount = itemsLoaded;
-    updateOverallProgress();
-};
-loadingManager.onError = function(url) {
-    texturesLoadedCount++; 
-    updateOverallProgress();
-};
-
-const textureLoader = new THREE.TextureLoader(loadingManager);
-const textures = {
-    boardTex: textureLoader.load('board.png'),
-    boardSide: textureLoader.load('board_side.png'), 
-    table: textureLoader.load('table.png'),
-    pieceBlue: textureLoader.load('blue.png'),
-    pieceRed: textureLoader.load('red.png'),
-    tray: textureLoader.load('tray.png'),
-    roomWall: textureLoader.load('wall.png'),
-    sideFront: textureLoader.load('side_front.png'),
-    sideBack: textureLoader.load('side_back.png'),
-    sideLeft: textureLoader.load('side_left.png'),
-    sideRight: textureLoader.load('side_right.png'),
-    dice1: textureLoader.load('dice_face_1.png'),
-    dice2: textureLoader.load('dice_face_2.png'),
-    dice3: textureLoader.load('dice_face_3.png'),
-    dice4: textureLoader.load('dice_face_4.png')
-};
-
 async function loadSFX(id, url) {
     try {
         const response = await fetch(url);
@@ -740,12 +697,54 @@ async function loadSFX(id, url) {
     }
 }
 
-// تحميل الداتا مباشرة في النطاق العام لمنع اختناق المتصفح
 applyLanguageUI();
 loadSFX('dice', 'dice.mp3');
 loadSFX('move', 'move.mp3');
 loadSFX('click', 'click.mp3'); 
 loadSFX('bgm', 'music.mp3'); 
+
+const canvas = document.createElement('canvas');
+canvas.width = 128; canvas.height = 64;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64); 
+
+// === تعديل بسيط جداً لتأخير عمل Three.js لحين انتهاء المتصفح من قراءته ===
+let dashTexture, loadingManager, textureLoader, textures;
+
+window.addEventListener('DOMContentLoaded', () => {
+    dashTexture = new THREE.CanvasTexture(canvas);
+    dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
+
+    loadingManager = new THREE.LoadingManager();
+    loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+        texturesLoadedCount = itemsLoaded;
+        updateOverallProgress();
+    };
+    loadingManager.onError = function(url) {
+        texturesLoadedCount++; 
+        updateOverallProgress();
+    };
+
+    textureLoader = new THREE.TextureLoader(loadingManager);
+    textures = {
+        boardTex: textureLoader.load('board.png'),
+        boardSide: textureLoader.load('board_side.png'), 
+        table: textureLoader.load('table.png'),
+        pieceBlue: textureLoader.load('blue.png'),
+        pieceRed: textureLoader.load('red.png'),
+        tray: textureLoader.load('tray.png'),
+        roomWall: textureLoader.load('wall.png'),
+        sideFront: textureLoader.load('side_front.png'),
+        sideBack: textureLoader.load('side_back.png'),
+        sideLeft: textureLoader.load('side_left.png'),
+        sideRight: textureLoader.load('side_right.png'),
+        dice1: textureLoader.load('dice_face_1.png'),
+        dice2: textureLoader.load('dice_face_2.png'),
+        dice3: textureLoader.load('dice_face_3.png'),
+        dice4: textureLoader.load('dice_face_4.png')
+    };
+});
+// =========================================================================
 
 function playBGM() {
     if (!audioCtx) audioCtx = new AudioContext();
@@ -863,7 +862,6 @@ function closeOnlineModal() {
     if(conn) { conn.close(); conn = null; }
 }
 
-// --- حل مشكلة تعليق سيرفر PeerJS عند الاستضافة (Host) ---
 function attemptHost() {
     if(peer) { 
         peer.destroy(); 
@@ -877,7 +875,6 @@ function attemptHost() {
         console.error("PeerJS Error:", e);
     }
 
-    // إذا لم يتم الربط خلال 5 ثواني، أعد محاولة إنشاء كود جديد حتى لا تعلق الشاشة
     clearTimeout(hostTimeout);
     hostTimeout = setTimeout(() => {
         if(peer && !peer.open) {
@@ -887,7 +884,7 @@ function attemptHost() {
     }, 5000);
     
     peer.on('open', (id) => {
-        clearTimeout(hostTimeout); // تم الربط بنجاح، أوقف الإعادة
+        clearTimeout(hostTimeout); 
         document.getElementById('room-id').innerText = id;
     });
     
@@ -906,7 +903,7 @@ function attemptHost() {
     
     peer.on('error', (err) => {
         if(err.type === 'unavailable-id' || err.type === 'server-error' || err.type === 'network') {
-            attemptHost(); // أعد المحاولة بصمت إذا كان العطل من السيرفر
+            attemptHost(); 
         }
     });
 }
@@ -969,7 +966,6 @@ function handleDisconnect() {
 }
 
 function setupConnection() {
-    // Keep-Alive Ping كل 10 ثوانٍ لتجنب انقطاع المتصفح الخامل
     setInterval(() => {
         if (conn && conn.open) {
             conn.send({type: 'ping'});
@@ -977,7 +973,7 @@ function setupConnection() {
     }, 10000);
 
     conn.on('data', (data) => {
-        if (data.type === 'ping') return; // تجاهل النبضة بأمان
+        if (data.type === 'ping') return; 
         if (!game) return;
         if(data.type === 'roll') {
             game.rollDice(data.val);
@@ -1014,13 +1010,6 @@ function resetGameUI() {
     if(p1Img) p1Img.style.filter = 'none';
     if(p2Img) p2Img.style.filter = 'grayscale(100%)';
 }
-
-const canvas = document.createElement('canvas');
-canvas.width = 128; canvas.height = 64;
-const ctx = canvas.getContext('2d');
-ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64); 
-const dashTexture = new THREE.CanvasTexture(canvas);
-dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
 
 const CONFIG = { cx: 13.76 / 8, cz: 5.19 / 3 }; 
 const PATHS = {
