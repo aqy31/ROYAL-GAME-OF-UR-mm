@@ -12,6 +12,10 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" as="script">
+
     <link rel="preload" href="bg.png" as="image">
     <link rel="preload" href="logo.png" as="image">
     
@@ -268,6 +272,10 @@
         .char-img.selected {
             border-color: #d4af37; opacity: 1; transform: scale(1.1); box-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
         }
+        /* كلاس إضافي لاختيار الخصم في الأونلاين (لون أحمر ومقفول) */
+        .char-img.locked {
+            border-color: #ff3333 !important; opacity: 1 !important; transform: scale(1.1) !important; box-shadow: 0 0 15px rgba(255, 51, 51, 0.8) !important; cursor: not-allowed !important;
+        }
 
         #footer {
             position: fixed; bottom: 0; width: 100%; height: 45px;
@@ -522,31 +530,39 @@ function openCharacterSelection(mode) {
 }
 
 function selectChar(playerNum, charIndex) {
+    // في الأونلاين يمنع الضغط على شخصية اللاعب الآخر
+    if (pendingMode === 'ONLINE' && playerNum !== myPlayerNum) return;
+
     playClickSound();
     if (playerNum === 1) {
         p1CharIndex = charIndex;
-        document.getElementById('sel-char-1').classList.remove('selected');
-        document.getElementById('sel-char-2').classList.remove('selected');
+        document.getElementById('sel-char-1').classList.remove('selected', 'locked');
+        document.getElementById('sel-char-2').classList.remove('selected', 'locked');
         document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
     } else {
         p2CharIndex = charIndex;
-        document.getElementById('sel-char-3').classList.remove('selected');
-        document.getElementById('sel-char-4').classList.remove('selected');
+        document.getElementById('sel-char-3').classList.remove('selected', 'locked');
+        document.getElementById('sel-char-4').classList.remove('selected', 'locked');
         document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
+    }
+
+    if (pendingMode === 'ONLINE' && conn && conn.open) {
+        conn.send({ type: 'live_char_select', playerNum: playerNum, charIndex: charIndex });
     }
 }
 
 function confirmCharacterSelection() {
     playClickSound();
+    if (pendingMode === 'ONLINE' && conn && conn.open) {
+        conn.send({ type: 'start_game' });
+    }
+    startGameLocal();
+}
+
+function startGameLocal() {
     document.getElementById('character-selection').style.display = 'none';
-    
     document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
     document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-
-    if (pendingMode === 'ONLINE' && conn && conn.open) {
-        conn.send({ type: 'char_select', charIndex: myPlayerNum === 1 ? p1CharIndex : p2CharIndex });
-    }
-    
     startCinematicIntro(pendingMode);
 }
 
@@ -677,24 +693,21 @@ let bgmSourceNode = null;
 let bgmGainNode = null;
 
 let texturesLoadedCount = 0;
-let audioLoadedCount = 0;
 const totalTextures = 15; 
-const totalAudio = 4;
 
+// تم إزالة ملفات الصوت من شريط التحميل ليحمل بشكل صاروخي
 function updateOverallProgress() {
-    let current = texturesLoadedCount + audioLoadedCount;
-    let total = totalTextures + totalAudio;
-    let percent = Math.floor((current / total) * 100);
+    let percent = Math.floor((texturesLoadedCount / totalTextures) * 100);
     
     document.getElementById('progress-fill').style.width = percent + '%';
     document.getElementById('loading-text').innerText = percent + '%';
 
-    if (current >= total) {
+    if (texturesLoadedCount >= totalTextures) {
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('launcher').style.display = 'flex';
             document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
-        }, 500);
+        }, 300);
     }
 }
 
@@ -731,8 +744,6 @@ async function loadSFX(id, url) {
     try {
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
-        audioLoadedCount++; 
-        updateOverallProgress();
         
         if (!audioCtx) audioCtx = new AudioContext();
         audioCtx.decodeAudioData(arrayBuffer, function(decodedData) {
@@ -741,13 +752,12 @@ async function loadSFX(id, url) {
             console.error("Audio Load Error:", err);
         });
     } catch (err) {
-        audioLoadedCount++; 
-        updateOverallProgress();
+        // fail silently
     }
 }
 
-// تحميل الداتا مباشرة في النطاق العام لمنع اختناق المتصفح
 applyLanguageUI();
+// تحميل الأصوات بالخلفية دون تعطيل الشاشة الرئيسية
 loadSFX('dice', 'dice.mp3');
 loadSFX('move', 'move.mp3');
 loadSFX('click', 'click.mp3'); 
@@ -903,6 +913,12 @@ function attemptHost() {
         document.getElementById('online-modal').style.display = 'none';
         
         openCharacterSelection('ONLINE');
+        
+        setTimeout(() => {
+            if (conn && conn.open) {
+                conn.send({ type: 'live_char_select', playerNum: myPlayerNum, charIndex: p1CharIndex });
+            }
+        }, 500);
     });
     
     peer.on('error', (err) => {
@@ -947,6 +963,12 @@ function joinGame() {
             document.getElementById('btn-connect').style.pointerEvents = 'auto';
             
             openCharacterSelection('ONLINE');
+            
+            setTimeout(() => {
+                if (conn && conn.open) {
+                    conn.send({ type: 'live_char_select', playerNum: myPlayerNum, charIndex: p2CharIndex });
+                }
+            }, 500);
         });
         conn.on('error', (err) => {
             alert("Connection Error: " + err.message);
@@ -976,16 +998,23 @@ function setupConnection() {
     conn.on('data', (data) => {
         if (data.type === 'ping') return; 
         
-        if (data.type === 'char_select') {
-            if (myPlayerNum === 1) {
-                p2CharIndex = data.charIndex;
-                const p2Img = document.getElementById('img-p2-name');
-                if(p2Img) p2Img.src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-            } else {
+        if (data.type === 'live_char_select') {
+            if (data.playerNum === 1) {
                 p1CharIndex = data.charIndex;
-                const p1Img = document.getElementById('img-p1-name');
-                if(p1Img) p1Img.src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
+                document.getElementById('sel-char-1').classList.remove('selected', 'locked');
+                document.getElementById('sel-char-2').classList.remove('selected', 'locked');
+                document.getElementById(`sel-char-${data.charIndex}`).classList.add('locked');
+            } else {
+                p2CharIndex = data.charIndex;
+                document.getElementById('sel-char-3').classList.remove('selected', 'locked');
+                document.getElementById('sel-char-4').classList.remove('selected', 'locked');
+                document.getElementById(`sel-char-${data.charIndex}`).classList.add('locked');
             }
+            return;
+        }
+        
+        if (data.type === 'start_game') {
+            startGameLocal();
             return;
         }
 
