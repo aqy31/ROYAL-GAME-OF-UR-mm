@@ -14,7 +14,10 @@
     <link rel="preload" href="board.png" as="image">
     
     <title>Royal Game of Ur - Pro Edition</title>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @font-face {
             font-family: 'GameFontAr';
@@ -207,13 +210,13 @@
         .img-btn:hover { transform: scale(1.03); z-index: 2; position: relative; }
 
         #online-modal {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 110; display: none; flex-direction: column; align-items: center; justify-content: center; color: #d4af37;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 110; display: none; flex-direction: column; align-items: center; justify-content: center;
         }
         .online-box {
             background-image: url('online_bg.png'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             padding: 40px 20px; text-align: center; 
-            width: 85vw; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+            width: 85vw; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 15px;
         }
         .online-img-btn {
             width: 220px; max-width: 80%; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.6));
@@ -387,11 +390,10 @@
 
 <div id="online-modal">
     <div class="online-box" id="online-menu">
-        <img id="btn-host" src="btn_host.png" class="online-img-btn" onclick="hostGame()" alt="Host">
-        <img id="btn-join" src="btn_join.png" class="online-img-btn" onclick="showJoin()" alt="Join">
+        <img id="btn-host" src="btn_host.png" class="online-img-btn" onclick="hostGame()" alt="Create Game (Host)">
+        <img id="btn-join" src="btn_join.png" class="online-img-btn" onclick="showJoin()" alt="Join Game (Guest)">
         <img id="btn-cancel1" src="btn_cancel.png" class="online-img-btn" onclick="closeOnlineModal()" alt="Cancel" style="margin-top: 15px; width: 150px;">
     </div>
-    
     <div class="online-box" id="host-ui" style="display:none;">
         <div class="input-container" style="margin-bottom: 15px;">
             <img id="img-bg-input-host" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'">
@@ -399,7 +401,6 @@
         </div>
         <img id="btn-cancel2" src="btn_cancel.png" class="online-img-btn" style="width: 150px; margin-top: 15px;" onclick="closeOnlineModal()" alt="Cancel">
     </div>
-    
     <div class="online-box" id="join-ui" style="display:none;">
         <div class="input-container" style="margin-bottom: 15px;">
             <img id="img-bg-input-join" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'">
@@ -468,32 +469,52 @@
 </div>
 
 <div id="intro-overlay" onclick="playClickSound(); endCinematicIntro();" style="cursor: pointer;">
-    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;">
+    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onerror="this.style.display='none'">
+    <h2 id="click-to-start-text" style="color: #d4af37; font-size: 2rem; margin-top: 20px; text-shadow: 2px 2px 5px #000; text-align: center;">انقر للبدء / Click to Start</h2>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
 <script>
-// --- نظام التحميل الشامل والمتكامل ---
 let p1CharIndex = 1; 
 let p2CharIndex = 3; 
 let pendingMode = 'PVP';
 
-const canvas = document.createElement('canvas');
-canvas.width = 128; canvas.height = 64;
-const ctx = canvas.getContext('2d');
-ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64); 
-const dashTexture = new THREE.CanvasTexture(canvas);
-dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
+function openCharacterSelection(mode) {
+    pendingMode = mode;
+    document.getElementById('launcher').style.display = 'none';
+    document.getElementById('character-selection').style.display = 'flex';
+    
+    if(mode === 'BOT') {
+        document.getElementById('p2-char-area').style.display = 'none';
+        p2CharIndex = Math.random() < 0.5 ? 3 : 4; 
+    } else {
+        document.getElementById('p2-char-area').style.display = 'flex';
+    }
+}
 
-const CONFIG = { cx: 13.76 / 8, cz: 5.19 / 3 }; 
-const PATHS = {
-    p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
-    p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
-};
+function selectChar(playerNum, charIndex) {
+    playClickSound();
+    if (playerNum === 1) {
+        p1CharIndex = charIndex;
+        document.getElementById('sel-char-1').classList.remove('selected');
+        document.getElementById('sel-char-2').classList.remove('selected');
+        document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
+    } else {
+        p2CharIndex = charIndex;
+        document.getElementById('sel-char-3').classList.remove('selected');
+        document.getElementById('sel-char-4').classList.remove('selected');
+        document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
+    }
+}
+
+function confirmCharacterSelection() {
+    playClickSound();
+    document.getElementById('character-selection').style.display = 'none';
+    
+    document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
+    document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
+    
+    startCinematicIntro(pendingMode);
+}
 
 let currentLang = localStorage.getItem('ur_game_lang') || 'ar';
 
@@ -504,7 +525,7 @@ function getImgSrc(baseName) {
 
     const dynamicImages = [
         'btn1.png', 'btn2.png', 'btn3.png', 'btn4.png',
-        'instructions.png', 'set_title.png', 'set_resume.png', 'set_restart.png', 'set_exit.png', 
+        'instructions.png', 'set_title.png', 'set_resume.png', 'set_restart.png', 'set_exit.png', 'set_icon.png',
         'btn_host.png', 'btn_join.png', 'btn_connect.png', 'btn_cancel.png', 'bg_input.png',
         'set_music.png', 'set_sfx.png', 'char_title.png', 'win_restart.png', 'win_exit.png', 'btn_start.png',
         'char_ingame_1.png', 'char_ingame_2.png', 'char_ingame_3.png', 'char_ingame_4.png'
@@ -534,6 +555,7 @@ function applyLanguageUI() {
     document.getElementById('img-set-resume').src = getImgSrc('set_resume.png');
     document.getElementById('img-set-restart').src = getImgSrc('set_restart.png');
     document.getElementById('img-set-exit').src = getImgSrc('set_exit.png');
+    document.getElementById('in-game-settings-btn').src = getImgSrc('set_icon.png');
     
     document.getElementById('btn-vic-restart').src = getImgSrc('win_restart.png');
     document.getElementById('btn-vic-exit').src = getImgSrc('win_exit.png');
@@ -558,6 +580,8 @@ function applyLanguageUI() {
     document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
 }
 
+window.addEventListener('DOMContentLoaded', applyLanguageUI);
+
 function toggleLanguage() {
     let newLang = currentLang === 'en' ? 'ar' : 'en';
     localStorage.setItem('ur_game_lang', newLang);
@@ -576,6 +600,17 @@ function getChatMsg(key, val = '') {
         'secured': { en: 'Piece secured!', ar: 'وصل الحجر بأمان!' }
     };
     return msgs[key] ? msgs[key][currentLang] : '';
+}
+
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+document.addEventListener('touchmove', function(e) {
+    if (e.scale !== 1) { e.preventDefault(); }
+}, { passive: false });
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
+    });
 }
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -607,31 +642,14 @@ let lastSfxVol = 1.0;
 let bgmSourceNode = null;
 let bgmGainNode = null;
 
-// المتغيرات للتحميل الشامل
 let texturesLoadedCount = 0;
 let audioLoadedCount = 0;
-let uiImagesLoadedCount = 0;
 const totalTextures = 15; 
 const totalAudio = 4;
 
-// كل الصور اللي لازم المتصفح يحملها قبل ما يفتح اللعبة
-const uiImagesList = [
-    'logo.png', 'bg.png', 'set_bg.png', 'chat_bg.png', 'online_bg.png', 'char_bg.png', 'bg_input.png',
-    'btn1.png', 'btn2.png', 'btn3.png', 'btn4.png', 'lang_en.png', 'lang_ar.png',
-    'btn_roll.png', 'zoom_hint.png', 'instructions.png',
-    'set_title.png', 'set_music.png', 'set_sfx.png', 'set_resume.png', 'set_resume_ar.png', 'set_restart.png', 'set_exit.png', 'set_icon.png',
-    'win_restart.png', 'win_exit.png', 'win_p1.png', 'win_p2.png', 'btn_start.png', 'char_title.png',
-    'btn_host.png', 'btn_join.png', 'btn_connect.png', 'btn_cancel.png',
-    'char_icon_1.png', 'char_icon_2.png', 'char_icon_3.png', 'char_icon_4.png',
-    'char_ingame_1.png', 'char_ingame_2.png', 'char_ingame_3.png', 'char_ingame_4.png',
-    'char_ingame_1_ar.png', 'char_ingame_2_ar.png', 'char_ingame_3_ar.png', 'char_ingame_4_ar.png',
-    'slider_track.png', 'slider_thumb.png', 'tg.png', 'insta.png'
-];
-const totalUiImages = uiImagesList.length;
-
 function updateOverallProgress() {
-    let current = texturesLoadedCount + audioLoadedCount + uiImagesLoadedCount;
-    let total = totalTextures + totalAudio + totalUiImages;
+    let current = texturesLoadedCount + audioLoadedCount;
+    let total = totalTextures + totalAudio;
     let percent = Math.floor((current / total) * 100);
     
     document.getElementById('progress-fill').style.width = percent + '%';
@@ -646,19 +664,6 @@ function updateOverallProgress() {
     }
 }
 
-// دالة تحميل صور الواجهة
-function preloadUIImages() {
-    uiImagesList.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        img.onload = img.onerror = () => {
-            uiImagesLoadedCount++;
-            updateOverallProgress();
-        };
-    });
-}
-
-// إعداد مدير التحميل لـ 3D
 const loadingManager = new THREE.LoadingManager();
 loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
     texturesLoadedCount = itemsLoaded;
@@ -707,10 +712,7 @@ async function loadSFX(id, url) {
     }
 }
 
-// بداية التحميل الشامل عند فتح الصفحة
 window.addEventListener('load', () => {
-    applyLanguageUI();
-    preloadUIImages();
     loadSFX('dice', 'dice.mp3');
     loadSFX('move', 'move.mp3');
     loadSFX('click', 'click.mp3'); 
@@ -795,7 +797,7 @@ function openSettings() {
     document.getElementById('settings-menu').style.display = 'flex'; 
     if (game == null) {
         document.getElementById('img-set-restart').style.display = 'none';
-        document.getElementById('img-set-resume').style.display = 'none';  
+        document.getElementById('img-set-resume').style.display = 'block';  
         document.getElementById('img-set-exit').style.display = 'none';   
         document.getElementById('btn-lang-toggle').style.display = 'block'; 
     } else {
@@ -812,44 +814,6 @@ let peer = null;
 let conn = null;
 let isOnline = false;
 let myPlayerNum = 1; 
-
-function openCharacterSelection(mode) {
-    pendingMode = mode;
-    document.getElementById('launcher').style.display = 'none';
-    document.getElementById('character-selection').style.display = 'flex';
-    
-    if(mode === 'BOT') {
-        document.getElementById('p2-char-area').style.display = 'none';
-        p2CharIndex = Math.random() < 0.5 ? 3 : 4; 
-    } else {
-        document.getElementById('p2-char-area').style.display = 'flex';
-    }
-}
-
-function selectChar(playerNum, charIndex) {
-    playClickSound();
-    if (playerNum === 1) {
-        p1CharIndex = charIndex;
-        document.getElementById('sel-char-1').classList.remove('selected');
-        document.getElementById('sel-char-2').classList.remove('selected');
-        document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
-    } else {
-        p2CharIndex = charIndex;
-        document.getElementById('sel-char-3').classList.remove('selected');
-        document.getElementById('sel-char-4').classList.remove('selected');
-        document.getElementById(`sel-char-${charIndex}`).classList.add('selected');
-    }
-}
-
-function confirmCharacterSelection() {
-    playClickSound();
-    document.getElementById('character-selection').style.display = 'none';
-    
-    document.getElementById('img-p1-name').src = getImgSrc(`char_ingame_${p1CharIndex}.png`);
-    document.getElementById('img-p2-name').src = getImgSrc(`char_ingame_${p2CharIndex}.png`);
-    
-    startCinematicIntro(pendingMode);
-}
 
 function openOnlineModal() {
     document.getElementById('online-modal').style.display = 'flex';
@@ -889,13 +853,8 @@ function hostGame() {
         startCinematicIntro('ONLINE');
     });
     peer.on('error', (err) => {
-        if(err.type === 'unavailable-id') {
-            if(peer) peer.destroy();
-            hostGame(); 
-        } else {
-            alert("Error: " + err.message);
-            closeOnlineModal();
-        }
+        alert("Error: " + err.message);
+        closeOnlineModal();
     });
 }
 
@@ -929,6 +888,14 @@ function joinGame() {
             
             startCinematicIntro('ONLINE');
         });
+        conn.on('error', (err) => {
+            alert("Connection Error: " + err.message);
+            closeOnlineModal();
+        });
+    });
+    peer.on('error', (err) => {
+        alert("Error: " + err.message);
+        closeOnlineModal();
     });
 }
 
@@ -977,6 +944,19 @@ function resetGameUI() {
     if(p1Img) p1Img.style.filter = 'none';
     if(p2Img) p2Img.style.filter = 'grayscale(100%)';
 }
+
+const canvas = document.createElement('canvas');
+canvas.width = 128; canvas.height = 64;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64); 
+const dashTexture = new THREE.CanvasTexture(canvas);
+dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
+
+const CONFIG = { cx: 13.76 / 8, cz: 5.19 / 3 }; 
+const PATHS = {
+    p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
+    p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
+};
 
 class Game3D {
     constructor(mode, isCinematic = false) {
