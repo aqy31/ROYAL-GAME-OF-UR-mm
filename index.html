@@ -356,23 +356,23 @@
 <div id="ui-layer">
     <div id="top-ui">
         <div id="top-row">
-            <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="" loading="lazy" decoding="async">
+            <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="">
         </div>
         
         <div id="score-row">
             <div class="score-box p1 interactive">
-                <img id="img-p1-name" src="char_ingame_1.png" alt="" loading="lazy" decoding="async">
+                <img id="img-p1-name" src="char_ingame_1.png" alt="">
                 <span class="score-num" id="s1">0</span>
             </div>
             <div class="score-box p2 interactive">
-                <img id="img-p2-name" src="char_ingame_3.png" alt="" loading="lazy" decoding="async">
+                <img id="img-p2-name" src="char_ingame_3.png" alt="">
                 <span class="score-num" id="s2">0</span>
             </div>
         </div>
     </div>
     
     <div id="bottom-bar">
-        <img id="btn-roll" src="btn_roll.png" class="roll-img-btn pulse-glow" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="" loading="lazy" decoding="async">
+        <img id="btn-roll" src="btn_roll.png" class="roll-img-btn pulse-glow" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="">
         
         <div id="chat-log">
             <div class="log-entry">Game ready, Good luck!</div>
@@ -380,88 +380,88 @@
     </div>
 
     <div id="zoom-hint">
-        <img id="img-zoom-hint" src="zoom_hint.png" alt="" style="width: 250px; max-width: 80vw; height: auto;" loading="lazy" decoding="async">
+        <img id="img-zoom-hint" src="zoom_hint.png" alt="" style="width: 250px; max-width: 80vw; height: auto;">
     </div>
 </div>
 
 <div id="character-selection">
     <div class="char-bg-box">
-        <img id="img-char-title" src="char_title.png" style="margin-bottom: 20px; width: 220px; max-width: 70vw;" onerror="this.style.display='none'" loading="lazy" decoding="async">
+        <img id="img-char-title" src="char_title.png" style="margin-bottom: 20px; width: 220px; max-width: 70vw;" onerror="this.style.display='none'">
         <div class="char-main-container">
             <div class="char-side">
                 <div class="char-options">
-                    <img id="sel-char-1" src="char_icon_1.png" class="char-img selected" onclick="selectChar(1, 1)" alt="Char 1" loading="lazy" decoding="async">
-                    <img id="sel-char-2" src="char_icon_2.png" class="char-img" onclick="selectChar(1, 2)" alt="Char 2" loading="lazy" decoding="async">
+                    <img id="sel-char-1" src="char_icon_1.png" class="char-img selected" onclick="selectChar(1, 1)" alt="Char 1">
+                    <img id="sel-char-2" src="char_icon_2.png" class="char-img" onclick="selectChar(1, 2)" alt="Char 2">
                 </div>
             </div>
             <div class="char-side" id="p2-char-area">
                 <div class="char-options">
-                    <img id="sel-char-3" src="char_icon_3.png" class="char-img selected" onclick="selectChar(2, 3)" alt="Char 3" loading="lazy" decoding="async">
-                    <img id="sel-char-4" src="char_icon_4.png" class="char-img" onclick="selectChar(2, 4)" alt="Char 4" loading="lazy" decoding="async">
+                    <img id="sel-char-3" src="char_icon_3.png" class="char-img selected" onclick="selectChar(2, 3)" alt="Char 3">
+                    <img id="sel-char-4" src="char_icon_4.png" class="char-img" onclick="selectChar(2, 4)" alt="Char 4">
                 </div>
             </div>
         </div>
-        <img id="btn-start-game" src="btn_start.png" class="online-img-btn" style="width: 180px;" onclick="confirmCharacterSelection()" alt="Start Game" loading="lazy" decoding="async">
+        <img id="btn-start-game" src="btn_start.png" class="online-img-btn" style="width: 180px;" onclick="confirmCharacterSelection()" alt="Start Game">
     </div>
 </div>
 
 <div id="online-modal">
     <div class="online-box" id="online-menu">
-        <img id="btn-host" src="btn_host.png" class="online-img-btn" onclick="hostGame()" alt="Host" loading="lazy" decoding="async">
-        <img id="btn-join" src="btn_join.png" class="online-img-btn" onclick="showJoin()" alt="Join" loading="lazy" decoding="async">
-        <img id="btn-cancel1" src="btn_cancel.png" class="online-img-btn" onclick="closeOnlineModal()" alt="Cancel" style="margin-top: 15px; width: 150px;" loading="lazy" decoding="async">
+        <img id="btn-host" src="btn_host.png" class="online-img-btn" onclick="hostGame()" alt="Host">
+        <img id="btn-join" src="btn_join.png" class="online-img-btn" onclick="showJoin()" alt="Join">
+        <img id="btn-cancel1" src="btn_cancel.png" class="online-img-btn" onclick="closeOnlineModal()" alt="Cancel" style="margin-top: 15px; width: 150px;">
     </div>
     
     <div class="online-box" id="host-ui" style="display:none;">
         <div class="input-container" style="margin-bottom: 15px;">
-            <img id="img-bg-input-host" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'" loading="lazy" decoding="async">
+            <img id="img-bg-input-host" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'">
             <h1 id="room-id" class="online-input" style="margin: 0; display: flex; align-items: center; justify-content: center; height: auto; user-select: all; letter-spacing: 5px; font-size: 2.2rem; cursor: text;">...</h1>
         </div>
-        <img id="btn-cancel2" src="btn_cancel.png" class="online-img-btn" style="width: 150px; margin-top: 15px;" onclick="closeOnlineModal()" alt="Cancel" loading="lazy" decoding="async">
+        <img id="btn-cancel2" src="btn_cancel.png" class="online-img-btn" style="width: 150px; margin-top: 15px;" onclick="closeOnlineModal()" alt="Cancel">
     </div>
     
     <div class="online-box" id="join-ui" style="display:none;">
         <div class="input-container" style="margin-bottom: 15px;">
-            <img id="img-bg-input-join" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'" loading="lazy" decoding="async">
+            <img id="img-bg-input-join" src="bg_input.png" class="input-bg" alt="" onerror="this.style.display='none'">
             <input type="text" id="join-id-input" class="online-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="5">
         </div>
-        <img id="btn-connect" src="btn_connect.png" class="online-img-btn" onclick="joinGame()" alt="Connect" loading="lazy" decoding="async">
-        <img id="btn-cancel3" src="btn_cancel.png" class="online-img-btn" style="margin-top: 15px; width: 150px;" onclick="closeOnlineModal()" alt="Cancel" loading="lazy" decoding="async">
+        <img id="btn-connect" src="btn_connect.png" class="online-img-btn" onclick="joinGame()" alt="Connect">
+        <img id="btn-cancel3" src="btn_cancel.png" class="online-img-btn" style="margin-top: 15px; width: 150px;" onclick="closeOnlineModal()" alt="Cancel">
     </div>
 </div>
 
 <div id="settings-menu">
     <div class="settings-box">
-        <img id="img-set-title" src="set_title.png" alt="" style="width: 160px; height: auto; margin-bottom: 5px;" loading="lazy" decoding="async">
+        <img id="img-set-title" src="set_title.png" alt="" style="width: 160px; height: auto; margin-bottom: 5px;">
         
         <div class="slider-container">
-            <img id="img-set-music" src="set_music.png" alt="" class="toggle-img" style="width: 110px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleMusic()" loading="lazy" decoding="async">
+            <img id="img-set-music" src="set_music.png" alt="" class="toggle-img" style="width: 110px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleMusic()">
             <div class="flex-row">
                 <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
             </div>
         </div>
         
         <div class="slider-container">
-            <img id="img-set-sfx" src="set_sfx.png" alt="" class="toggle-img" style="width: 110px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleSFX()" loading="lazy" decoding="async">
+            <img id="img-set-sfx" src="set_sfx.png" alt="" class="toggle-img" style="width: 110px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleSFX()">
             <div class="flex-row">
                 <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 5px;">
-            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); restartGameBtn();" alt="" loading="lazy" decoding="async">
-            <img id="btn-lang-toggle" src="lang_en.png" class="img-btn" style="width: 180px; margin-bottom: 5px;" onclick="playClickSound(); toggleLanguage();" alt="Change Language" loading="lazy" decoding="async">
-            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); exitGameBtn();" alt="" loading="lazy" decoding="async">
-            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); closeSettings();" alt="" loading="lazy" decoding="async">
+            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); restartGameBtn();" alt="">
+            <img id="btn-lang-toggle" src="lang_en.png" class="img-btn" style="width: 180px; margin-bottom: 5px;" onclick="playClickSound(); toggleLanguage();" alt="Change Language">
+            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); exitGameBtn();" alt="">
+            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 180px;" onclick="playClickSound(); closeSettings();" alt="">
         </div>
     </div>
 </div>
 
 <div id="victory-screen">
     <div class="victory-box">
-        <img id="img-winner-name" src="win_p1.png" alt="Winner" style="width: 250px; max-width: 80vw; height: auto; margin-bottom: 20px;" loading="lazy" decoding="async">
-        <img id="btn-vic-restart" src="win_restart.png" class="vic-btn" onclick="playClickSound(); restartGameBtn();" alt="Restart" loading="lazy" decoding="async">
-        <img id="btn-vic-exit" src="win_exit.png" class="vic-btn" onclick="playClickSound(); exitGameBtn();" alt="Exit" loading="lazy" decoding="async">
+        <img id="img-winner-name" src="win_p1.png" alt="Winner" style="width: 250px; max-width: 80vw; height: auto; margin-bottom: 20px;">
+        <img id="btn-vic-restart" src="win_restart.png" class="vic-btn" onclick="playClickSound(); restartGameBtn();" alt="Restart">
+        <img id="btn-vic-exit" src="win_exit.png" class="vic-btn" onclick="playClickSound(); exitGameBtn();" alt="Exit">
     </div>
 </div>
 
@@ -488,7 +488,7 @@
 </div>
 
 <div id="intro-overlay" onclick="playClickSound(); endCinematicIntro();" style="cursor: pointer;">
-    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onerror="this.style.display='none'" loading="lazy" decoding="async">
+    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onerror="this.style.display='none'">
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -694,6 +694,8 @@ let bgmGainNode = null;
 
 // =========== الكود الجديد الخاص بالتحميل ============
 const loadingManager = new THREE.LoadingManager();
+let threeJSReady = false;
+let uiImagesReady = false;
 
 function finishLoading() {
     document.getElementById('progress-fill').style.width = '100%';
@@ -708,9 +710,17 @@ function finishLoading() {
     }, 500);
 }
 
-// لما تخلص كل الملفات سواء نجحت أو فشلت
+// دالة تفحص إذا كل شيء جاهز (الـ 3D وصور الواجهة)
+function checkAllReady() {
+    if (threeJSReady && uiImagesReady) {
+        finishLoading();
+    }
+}
+
+// 1. تتبع صور وملفات الـ 3D
 loadingManager.onLoad = function() {
-    finishLoading();
+    threeJSReady = true;
+    checkAllReady();
 };
 
 loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
@@ -723,11 +733,54 @@ loadingManager.onError = function(url) {
     console.warn('ملف تأخر أو غير موجود، جاري التخطي:', url);
 };
 
-// ضمان إضافي: اللعبة تفتح إجبارياً بعد 5 ثواني مهما كان الوضع
+// 2. تتبع صور واجهة المستخدم (UI) وإجبار المتصفح على تحميلها
+window.addEventListener('DOMContentLoaded', () => {
+    const allImages = document.querySelectorAll('img');
+    let totalImages = allImages.length;
+    let loadedImages = 0;
+
+    if (totalImages === 0) {
+        uiImagesReady = true;
+        checkAllReady();
+    }
+
+    allImages.forEach(img => {
+        // إزالة التحميل الكسول عشان المتصفح يحملهم فوراً حتى لو القوائم مخفية حالياً
+        img.removeAttribute('loading');
+
+        if (img.complete) {
+            loadedImages++;
+            if (loadedImages === totalImages) {
+                uiImagesReady = true;
+                checkAllReady();
+            }
+        } else {
+            img.addEventListener('load', () => {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                    uiImagesReady = true;
+                    checkAllReady();
+                }
+            });
+            img.addEventListener('error', () => {
+                // نتجاهل الأخطاء (لو صورة مفقودة) عشان اللعبة ما تعلق بشاشة التحميل
+                loadedImages++; 
+                if (loadedImages === totalImages) {
+                    uiImagesReady = true;
+                    checkAllReady();
+                }
+            });
+        }
+    });
+});
+
+// ضمان إضافي: اللعبة تفتح إجبارياً بعد 8 ثواني في حال كان النت ضعيف جداً وتأخرت صورة معينة
 window.addEventListener('load', () => {
     setTimeout(() => {
-        finishLoading();
-    }, 5000);
+        if (!threeJSReady || !uiImagesReady) {
+            finishLoading();
+        }
+    }, 8000);
 });
 // ===================================================
 
