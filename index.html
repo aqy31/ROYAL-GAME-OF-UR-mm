@@ -692,33 +692,44 @@ let lastSfxVol = 1.0;
 let bgmSourceNode = null;
 let bgmGainNode = null;
 
-let texturesLoadedCount = 0;
-const totalTextures = 15; 
+// =========== الكود الجديد الخاص بالتحميل ============
+const loadingManager = new THREE.LoadingManager();
 
-function updateOverallProgress() {
-    let percent = Math.floor((texturesLoadedCount / totalTextures) * 100);
-    
-    document.getElementById('progress-fill').style.width = percent + '%';
-    document.getElementById('loading-text').innerText = percent + '%';
-
-    if (texturesLoadedCount >= totalTextures) {
-        setTimeout(() => {
-            document.getElementById('loading-screen').style.display = 'none';
+function finishLoading() {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('loading-text').innerText = '100%';
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen.style.display !== 'none') {
+            loadingScreen.style.display = 'none';
             document.getElementById('launcher').style.display = 'flex';
             document.getElementById('chat-log').innerHTML = `<div class="log-entry">${getChatMsg('ready')}</div>`;
-        }, 300);
-    }
+        }
+    }, 500);
 }
 
-const loadingManager = new THREE.LoadingManager();
+// لما تخلص كل الملفات سواء نجحت أو فشلت
+loadingManager.onLoad = function() {
+    finishLoading();
+};
+
 loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
-    texturesLoadedCount = itemsLoaded;
-    updateOverallProgress();
+    let percent = Math.floor((itemsLoaded / itemsTotal) * 100);
+    document.getElementById('progress-fill').style.width = percent + '%';
+    document.getElementById('loading-text').innerText = percent + '%';
 };
+
 loadingManager.onError = function(url) {
-    texturesLoadedCount++; 
-    updateOverallProgress();
+    console.warn('ملف تأخر أو غير موجود، جاري التخطي:', url);
 };
+
+// ضمان إضافي: اللعبة تفتح إجبارياً بعد 5 ثواني مهما كان الوضع
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        finishLoading();
+    }, 5000);
+});
+// ===================================================
 
 const textureLoader = new THREE.TextureLoader(loadingManager);
 const textures = {
